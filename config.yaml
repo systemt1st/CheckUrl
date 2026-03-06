@@ -1,0 +1,110 @@
+# 输入/输出
+input: urls.txt
+output: result.txt
+
+# 运行参数
+runtime:
+  # asyncio 并发数
+  concurrency: 8
+  # 全局出站请求上限（所有 provider 汇总，单位 req/s，0 表示关闭）
+  global_max_requests_per_second: 3.0
+  # 单次请求超时（秒）
+  timeout: 12.0
+  # 单 provider 重试次数
+  max_retries: 0
+  # 重试退避基数（秒）
+  retry_backoff: 2.0
+  # 重试抖动比例（0~1）
+  retry_jitter: 0.25
+  # 进度日志间隔
+  progress_every: 50
+  # 每批处理 URL 数（0 表示不分批）
+  batch_size: 300
+  # 批次间冷却秒数
+  batch_cooldown: 60.0
+  # provider 调度策略: priority/round_robin/url_hash/adaptive
+  provider_order_strategy: adaptive
+  # provider 连续限流后冷却秒数
+  provider_cooldown_seconds: 120.0
+  # provider 冷却指数退避系数（>=1）
+  provider_cooldown_backoff_factor: 2.0
+  # provider 冷却最大秒数（0 表示不设上限）
+  provider_cooldown_max_seconds: 1800.0
+  # 触发冷却的连续限流次数（0 表示关闭）
+  provider_rate_limit_threshold: 2
+  # 单 provider 每轮最大请求数（0 表示不限制）
+  provider_max_requests_per_run: 0
+  # 单 provider 每分钟最大请求数（0 表示不限制）
+  provider_max_requests_per_minute: 0
+  # 日志级别: DEBUG/INFO/WARNING/ERROR
+  log_level: INFO
+  # JSON 行日志文件路径（留空仅输出终端）
+  log_file: ""
+
+# Provider 配置（不兼容旧扁平格式）
+# 规则：按 priority 从小到大执行；smallseotools 若启用会被强制排到最后。
+providers:
+  xiarou:
+    enabled: true
+    priority: 20
+    rps: 1.0
+
+  haikou_luxia:
+    enabled: true
+    priority: 30
+    rps: 1.0
+
+  xianglian:
+    enabled: true
+    priority: 40
+    rps: 0.8
+    api_key: ""
+
+  ip33:
+    enabled: true
+    priority: 50
+    rps: 1.0
+
+  la46:
+    enabled: true
+    priority: 60
+    rps: 1.0
+
+  fulimama:
+    enabled: true
+    priority: 70
+    rps: 0.8
+
+  chinaz_tool:
+    enabled: true
+    priority: 80
+    rps: 0.5
+
+  nullgo:
+    enabled: true
+    priority: 90
+    rps: 0.5
+
+  cjzzc:
+    enabled: true
+    priority: 100
+    rps: 0.5
+
+  boce:
+    enabled: true
+    priority: 110
+    rps: 0.3
+    node_ids: ["81173", "81022", "81100"]
+
+  apihz:
+    enabled: true
+    priority: 10
+    rps: 1.0
+    id: ""
+    key: ""
+    type: "1"
+
+  smallseotools:
+    enabled: true
+    priority: 120
+    rps: 0.3

@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.claude/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+*.checkpoint.jsonl
+project_analysis.md
+result.txt
+接口har/
