@@ -1,9 +1,53 @@
 # CheckUrl
 
-一个面向批量场景的异步 URL 状态检测工具。它会从输入文件读取网址，按配置并发执行检测，并在多个 Provider 之间自动回退，输出每个 URL 的最终状态结果。
+一个面向批量场景的异步 URL 状态检测工具。它的核心亮点是只调用第三方站点或第三方接口完成检测，不直接对目标站点发起常规探测请求；程序会从输入文件读取网址，按配置并发执行检测，并在多个 Provider 之间自动回退，输出每个 URL 的最终状态结果。
+
+## 已接入第三方接口 / 站点
+
+这是项目最直观的亮点：**不直接探测目标站点，而是复用现成第三方检测能力**。
+
+| Provider | 已接入接口 / 站点 |
+| --- | --- |
+| apihz | `cn.apihz.cn` |
+| xiarou | `v.api.aa1.cn` |
+| haikou_luxia | `api.lxurl.net` |
+| xianglian | `openapi.chinaz.net` |
+| ip33 | `api.ip33.com` |
+| la46 | `www.46.la` |
+| nullgo | `www.nullgo.com` |
+| fulimama | `www.fulimama.com` |
+| chinaz_tool | `tool.chinaz.com` |
+| cjzzc | `www.cjzzc.com` / `tt*.cjzzc.com` / `tt*.yywy.cn` |
+| boce | `www.boce.com` |
+| smallseotools | `smallseotools.com` |
+
+一眼看点：`apihz`、`aa1`、`lxurl`、`Chinaz`、`IP33`、`46.la`、`NullGo`、`FuliMama`、`Cjzzc`、`Boce`、`SmallSEOTools` 都已接入到回退链里。
+
+## 原理流程图
+
+```mermaid
+flowchart TD
+    A[读取 config.yaml] --> B[读取 urls.txt]
+    B --> C[URL 标准化与去重]
+    C --> D[构建已启用的 Provider 列表]
+    D --> E[按并发策略分发任务]
+    E --> F[DispatchController 生成调用顺序]
+    F --> G[调用第三方接口 / 第三方站点]
+    G --> H{是否成功返回状态码}
+    H -- 是 --> I[记录 provider / 延迟 / 详情]
+    H -- 否 --> J[切换下一个 Provider 回退]
+    J --> F
+    I --> K[汇总统计信息]
+    K --> L[输出 result.txt]
+
+    M[目标站点] -. 不直接探测 .-> G
+```
+
+原理上，它不是自己去直连目标站点做常规状态探测，而是把待检测 URL 交给多个第三方 Provider 处理，再把各 Provider 返回的状态码、延迟和详情统一收敛输出。
 
 ## 特点
 
+- 第三方接口驱动：这是项目最核心的特点，检测过程只调用第三方站点或接口能力，不直接探测目标 URL。
 - 异步批量检测：基于 `asyncio` 和 `aiohttp`，适合一次处理大量 URL。
 - 多 Provider 回退：单个 Provider 失败后会自动切换到下一个 Provider。
 - 灵活调度：支持 `priority`、`round_robin`、`url_hash`、`adaptive` 多种调度策略。
