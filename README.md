@@ -27,23 +27,40 @@
 
 ```mermaid
 flowchart TD
-    A[读取 config.yaml] --> B[读取 urls.txt]
-    B --> C[URL 标准化与去重]
-    C --> D[构建已启用的 Provider 列表]
-    D --> E[按并发策略分发任务]
-    E --> F[DispatchController 生成调用顺序]
-    F --> G[调用第三方接口 / 第三方站点]
-    G --> H{是否成功返回状态码}
-    H -- 是 --> I[记录 provider / 延迟 / 详情]
-    H -- 否 --> J[切换下一个 Provider 回退]
-    J --> F
-    I --> K[汇总统计信息]
-    K --> L[输出 result.txt]
-
-    M[目标站点] -. 不直接探测 .-> G
+    A[读取配置和 URL 列表] --> B[URL 标准化与去重]
+    B --> C[构建已启用的 Provider 列表]
+    C --> D[按调度策略生成调用顺序]
+    D --> E[调用第三方接口或站点]
+    E --> F{成功返回状态码?}
+    F -->|是| G[记录状态码 延迟和详情]
+    F -->|否| H[回退到下一个 Provider]
+    H --> D
+    G --> I[汇总统计并写入 result.txt]
 ```
 
 原理上，它不是自己去直连目标站点做常规状态探测，而是把待检测 URL 交给多个第三方 Provider 处理，再把各 Provider 返回的状态码、延迟和详情统一收敛输出。
+
+如果你的 GitHub 页面仍然不显示 Mermaid，也可以直接看下面这个纯文本版：
+
+```text
+config.yaml + urls.txt
+        ↓
+URL 标准化与去重
+        ↓
+构建已启用的 Provider 列表
+        ↓
+按调度策略生成调用顺序
+        ↓
+调用第三方接口或站点
+        ↓
+是否成功返回状态码？
+   ├─ 是 → 记录状态码 / 延迟 / 详情
+   └─ 否 → 回退到下一个 Provider
+                ↓
+             继续重试
+        ↓
+汇总统计并写入 result.txt
+```
 
 ## 特点
 
